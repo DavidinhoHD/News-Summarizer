@@ -41,11 +41,11 @@ func removeThinkingTags(response string) string {
 }
 
 // make a request to an LLM and return the response
-func ollamaRequest(llmKey string) OllamaResponse {
+func ollamaRequest(llmKey string, prompt string) OllamaResponse {
 	// create JSON request body
 	jsonBody := OllamaRequest{
 		Model:  "qwen3:8b",
-		Prompt: systemPrompt + userQuestion,
+		Prompt: prompt,
 		Stream: false,
 	}
 	jsonBodyBytes, err := json.Marshal(jsonBody)

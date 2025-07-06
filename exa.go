@@ -149,7 +149,7 @@ type ExaGetContentResponse struct {
 	} `json:"costDollars"`
 }
 
-func exaRequest(exaKey string, q string) ExaResponse {
+func exaSearchRequest(exaKey string, q string) ExaResponse {
 	// create JSON request body
 	reqData := ExaRequest{
 		Query: q,
