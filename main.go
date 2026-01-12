@@ -28,13 +28,13 @@ func main() {
 
 	req := openrouter.Request{
 		Model: "z-ai/glm-4.5-air:free",
-		Message: []openrouter.Message{
+		Messages: []openrouter.Message{
 			{
 				Role:	"system",
 				Content: "you are a freandly assistant that answares the users questions",
 			},
 			{
-				Role:	 "User",
+				Role:	 "user",
 				Content: "hello",
 			},
 
@@ -54,33 +54,5 @@ func main() {
 		fmt.Println(err)
 	}
 
-	// exaKey := os.Getenv("EXA_KEY")
-	// llmAPI := os.Getenv("LLM_API")
 
-	// userQuestion := getUserInput()
-
-
-	// // generate search query based on user question
-	// searchQuery := ollamaRequest(llmAPI, fmt.Sprintf("%s\n%s", systemPrompt, userQuestion))
-	// cleanedSearchQuery := removeThinkingTags(searchQuery.Response)
-
-	// // search for articles
-	// articles := exaSearchRequest(exaKey, cleanedSearchQuery)
-	// var results []string
-	// for _, res:= range articles.Results {
-	// 	results = append(results, res.URL)
-	// }
-
-	// // get content of articles
-	// contentResponse := exaGetContent(exaKey, results)
-	// var content []string
-	// for _, res := range contentResponse.Results {
-	// 	content = append(content, res.Text)
-	// }
-
-	// // summarize content via LLM
-	// summaryResponse := ollamaRequest(llmAPI, fmt.Sprintf("%s\n%s", contentSummaryQuery, strings.Join(content, "\n")))
-	// cleanedSummaryResponse := removeThinkingTags(summaryResponse.Response)
-
-	// fmt.Println(cleanedSummaryResponse)
 }
