@@ -6,6 +6,8 @@ import (
 	"os"
 	"strings"
 
+	"DavidinhoHD/News-Summarizer/openrouter"
+
 	"github.com/joho/godotenv"
 )
 
@@ -23,38 +25,62 @@ func getUserInput() string {
 }
 
 func main() {
-	err := godotenv.Load()
+
+	req := openrouter.Request{
+		Model: "z-ai/glm-4.5-air:free",
+		Message: []openrouter.Message{
+			{
+				Role:	"system",
+				Content: "you are a freandly assistant that answares the users questions",
+			},
+			{
+				Role:	 "User",
+				Content: "hello",
+			},
+
+		},
+	}
+
+
+	 err := godotenv.Load()
+	 if err != nil {
+	 	fmt.Println("Error loading .env file")
+	 	os.Exit(1)
+	}
+	openrouter_key := os.Getenv("openrouter_key")
+
+	_, err = openrouter.MakeOpenRouterRequest(req, openrouter_key)
 	if err != nil {
-		fmt.Println("Error loading .env file")
-		os.Exit(1)
-	}
-	exaKey := os.Getenv("EXA_KEY")
-	llmAPI := os.Getenv("LLM_API")
-
-	userQuestion := getUserInput()
-
-
-	// generate search query based on user question
-	searchQuery := ollamaRequest(llmAPI, fmt.Sprintf("%s\n%s", systemPrompt, userQuestion))
-	cleanedSearchQuery := removeThinkingTags(searchQuery.Response)
-
-	// search for articles 
-	articles := exaSearchRequest(exaKey, cleanedSearchQuery)
-	var results []string
-	for _, res:= range articles.Results {
-		results = append(results, res.URL)
+		fmt.Println(err)
 	}
 
-	// get content of articles
-	contentResponse := exaGetContent(exaKey, results)
-	var content []string
-	for _, res := range contentResponse.Results {
-		content = append(content, res.Text)
-	}
+	// exaKey := os.Getenv("EXA_KEY")
+	// llmAPI := os.Getenv("LLM_API")
 
-	// summarize content via LLM
-	summaryResponse := ollamaRequest(llmAPI, fmt.Sprintf("%s\n%s", contentSummaryQuery, strings.Join(content, "\n")))
-	cleanedSummaryResponse := removeThinkingTags(summaryResponse.Response)
+	// userQuestion := getUserInput()
 
-	fmt.Println(cleanedSummaryResponse)
+
+	// // generate search query based on user question
+	// searchQuery := ollamaRequest(llmAPI, fmt.Sprintf("%s\n%s", systemPrompt, userQuestion))
+	// cleanedSearchQuery := removeThinkingTags(searchQuery.Response)
+
+	// // search for articles
+	// articles := exaSearchRequest(exaKey, cleanedSearchQuery)
+	// var results []string
+	// for _, res:= range articles.Results {
+	// 	results = append(results, res.URL)
+	// }
+
+	// // get content of articles
+	// contentResponse := exaGetContent(exaKey, results)
+	// var content []string
+	// for _, res := range contentResponse.Results {
+	// 	content = append(content, res.Text)
+	// }
+
+	// // summarize content via LLM
+	// summaryResponse := ollamaRequest(llmAPI, fmt.Sprintf("%s\n%s", contentSummaryQuery, strings.Join(content, "\n")))
+	// cleanedSummaryResponse := removeThinkingTags(summaryResponse.Response)
+
+	// fmt.Println(cleanedSummaryResponse)
 }
