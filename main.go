@@ -25,6 +25,13 @@ func getUserInput() string {
 }
 
 func main() {
+// Load API key
+ err := godotenv.Load()
+ if err != nil {
+ 	fmt.Println("Error loading .env file")
+ 	os.Exit(1)
+}
+openrouter_key := os.Getenv("openrouter_key")
 
 	req := openrouter.Request{
 		Model: "z-ai/glm-4.5-air:free",
@@ -41,13 +48,6 @@ func main() {
 		},
 	}
 
-
-	 err := godotenv.Load()
-	 if err != nil {
-	 	fmt.Println("Error loading .env file")
-	 	os.Exit(1)
-	}
-	openrouter_key := os.Getenv("openrouter_key")
 
 	_, err = openrouter.MakeOpenRouterRequest(req, openrouter_key)
 	if err != nil {

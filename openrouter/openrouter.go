@@ -6,13 +6,21 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
+)
+
+const (
+	baseURL = 	"https://openrouter.ai/api/v1/chat/competions"
+	defaultTimeout = 30 * time.Second
 )
 
 
 type Request struct {
-	Model 	string		`json:"model"`
-	Messages []Message	`json:"messages"`
-	Stream 	bool		`json:"stream"`
+	Model 		string		`json:"model"`
+	Messages 	[]Message	`json:"messages"`
+	Stream 		bool		`json:"stream,omitempty"`
+	Temperature float64   	`json:"temperature,omitempty"`
+    MaxTokens   int       	`json:"max_tokens,omitempty"`
 }
 
 type OpenRouterResponse struct {
@@ -23,6 +31,13 @@ type OpenRouterResponse struct {
     Created  int64    `json:"created"`
     Choices  []Choice `json:"choices"`
     Usage    Usage    `json:"usage"`
+    Error	 *APIError `json:"error",omitempty`
+}
+
+type APIError struct {
+	Message string `json:"message"`
+	Type string `json:"type"`
+	Code string `json:"code"`
 }
 
 type Choice struct {
@@ -79,21 +94,28 @@ type CompletionTokensDetails struct {
 
 func MakeOpenRouterRequest(r Request, apiKey string) (OpenRouterResponse, error) {
 	var response OpenRouterResponse
+
+	if apiKey == "" {
+		return OpenRouterResponse{}, fmt.Errorf("API key is required")
+	}
+
+	// Marshal request body
 	jsonBody, err := json.Marshal(r)
 	if err != nil {
 		return OpenRouterResponse{}, err
 	}
 
 	// create Http request
-	req, err := http.NewRequest("POST", "https://openrouter.ai/api/v1/chat/completions", bytes.NewBuffer(jsonBody))
+	req, err := http.NewRequest("POST", baseURL, bytes.NewBuffer(jsonBody))
 	if err != nil {
-		return OpenRouterResponse{}, err
+		return OpenRouterResponse{}, fmt.Errorf("failed to create request: %w", err)
 	}
 
 	// set request Headers
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apiKey))
 
+	// make request
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
@@ -110,7 +132,12 @@ func MakeOpenRouterRequest(r Request, apiKey string) (OpenRouterResponse, error)
 	// turn JSON response to OpenRouterResponse
 	err = json.Unmarshal(r_body, &response)
 	if err != nil {
-		return OpenRouterResponse{}, err
+		return OpenRouterResponse{}, fmt.Errorf("failed to parse response: %w", err)
+	}
+
+	// check HTTP status code
+	if resp.StatusCode != http.StatusOK {
+		return OpenRouterResponse{}, fmt.Errorf("unexpected status code %d", resp.StatusCode)
 	}
 
 
