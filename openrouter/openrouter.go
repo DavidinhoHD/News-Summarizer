@@ -76,16 +76,18 @@ type CompletionTokensDetails struct {
     ImageTokens     int `json:"image_tokens"`
 }
 
-func MakeOpenRouterRequest(r Request, apiKey string) (*http.Response, error) {
+
+func MakeOpenRouterRequest(r Request, apiKey string) (OpenRouterResponse, error) {
+	var response OpenRouterResponse
 	jsonBody, err := json.Marshal(r)
 	if err != nil {
-		return nil, err
+		return OpenRouterResponse{}, err
 	}
 
 	// create Http request
 	req, err := http.NewRequest("POST", "https://openrouter.ai/api/v1/chat/completions", bytes.NewBuffer(jsonBody))
 	if err != nil {
-		return nil, err
+		return OpenRouterResponse{}, err
 	}
 
 	// set request Headers
@@ -95,17 +97,22 @@ func MakeOpenRouterRequest(r Request, apiKey string) (*http.Response, error) {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, err
+		return OpenRouterResponse{}, err
 	}
 	defer resp.Body.Close()
 
 
 	r_body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return OpenRouterResponse{}, err
 	}
-	fmt.Println(string(r_body))
+
+	// turn JSON response to OpenRouterResponse
+	err = json.Unmarshal(r_body, &response)
+	if err != nil {
+		return OpenRouterResponse{}, err
+	}
 
 
-	return resp, nil
+	return response, nil
 }
