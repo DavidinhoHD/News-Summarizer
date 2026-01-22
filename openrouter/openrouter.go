@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	baseURL = 	"https://openrouter.ai/api/v1/chat/competions"
+	baseURL = 	"https://openrouter.ai/api/v1/chat/completions"
 	defaultTimeout = 30 * time.Second
 )
 
@@ -31,7 +31,7 @@ type OpenRouterResponse struct {
     Created  int64    `json:"created"`
     Choices  []Choice `json:"choices"`
     Usage    Usage    `json:"usage"`
-    Error	 *APIError `json:"error",omitempty`
+    Error	 *APIError `json:"error,omitempty"`
 }
 
 type APIError struct {
