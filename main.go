@@ -10,8 +10,9 @@ import (
 )
 
 var (
-	defaultModel = "x-ai/grok-4.1-fast:online"
-	systemPromt = `
+	defaultModel         = "x-/grok-4.1-fast:online"
+	alternativeModelList = []string{"x-ai/grok-4.3:online", "inception/mercury-2:online"}
+	systemPromt          = `
 
 You are Grok, an AI assistant specialized in providing real-time news summaries with a focus on current global events.
 
@@ -63,38 +64,48 @@ You are Grok, an AI assistant specialized in providing real-time news summaries 
 When summarizing news, prioritize accuracy and timeliness while maintaining awareness that initial reports may be incomplete or subject to change.
 
 	`
-
 )
 
-
 func main() {
-// Load API key
- err := godotenv.Load()
- if err != nil {
- 	fmt.Println("Error loading .env file")
- 	os.Exit(1)
-}
-openrouter_key := os.Getenv("openrouter_key")
+	// Load API key
+	err := godotenv.Load()
+	if err != nil {
+		fmt.Println("Error loading .env file")
+		os.Exit(1)
+	}
+	openrouter_key := os.Getenv("OPENROUTER_API_KEY")
 
 	req := openrouter.Request{
 		Model: defaultModel,
 		Messages: []openrouter.Message{
 			{
-				Role:	"system",
+				Role:    "system",
 				Content: systemPromt,
 			},
 			{
-				Role:	 "user",
+				Role:    "user",
 				Content: "give me the news",
 			},
-
+		},
+		Reasoning: openrouter.Reasoning{
+			Effort: openrouter.ReasoningEffortNone,
 		},
 	}
 
-
 	resp, err := openrouter.MakeOpenRouterRequest(req, openrouter_key)
 	if err != nil {
-		fmt.Println(err)
+		// retry with different model
+		for _, model := range alternativeModelList {
+			req.Model = model
+			resp, err = openrouter.MakeOpenRouterRequest(req, openrouter_key)
+			if err == nil {
+				break
+			}
+		}
+		if err != nil {
+			fmt.Println("Error: ", err)
+			os.Exit(1)
+		}
 	}
 
 	m := resp.Choices[0].Message.Content

@@ -9,6 +9,14 @@ import (
 	"time"
 )
 
+type ReasoningEffort string
+const (
+	ReasoningEffortNone ReasoningEffort = "none"
+	ReasoningEffortLow ReasoningEffort = "low"
+	ReasoningEffortMedium ReasoningEffort = "medium"
+	ReasoningEffortHigh ReasoningEffort = "high"
+)
+
 const (
 	baseURL = 	"https://openrouter.ai/api/v1/chat/completions"
 	defaultTimeout = 30 * time.Second
@@ -21,7 +29,13 @@ type Request struct {
 	Stream 		bool		`json:"stream,omitempty"`
 	Temperature float64   	`json:"temperature,omitempty"`
     MaxTokens   int       	`json:"max_tokens,omitempty"`
+	Reasoning   Reasoning 	`json:"reasoning,omitempty"`
 }
+
+type Reasoning struct {
+	Effort ReasoningEffort
+}
+
 
 type OpenRouterResponse struct {
     ID       string   `json:"id"`
@@ -92,11 +106,33 @@ type CompletionTokensDetails struct {
 }
 
 
+// resoning effort validator
+func (r *ReasoningEffort) isValid() bool {
+	switch *r {
+		case ReasoningEffortNone:
+			return true
+		case ReasoningEffortLow:
+			return true
+		case ReasoningEffortMedium:
+			return true
+		case ReasoningEffortHigh:
+			return true
+		default:
+			return false
+	}
+}
+
+
 func MakeOpenRouterRequest(r Request, apiKey string) (OpenRouterResponse, error) {
 	var response OpenRouterResponse
 
 	if apiKey == "" {
 		return OpenRouterResponse{}, fmt.Errorf("API key is required")
+	}
+
+	// validate reasoning effort if not empty
+	if r.Reasoning.Effort != "" && !r.Reasoning.Effort.isValid() {
+		return OpenRouterResponse{}, fmt.Errorf("invalid reasoning effort")
 	}
 
 	// Marshal request body
