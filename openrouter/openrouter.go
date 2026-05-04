@@ -141,5 +141,11 @@ func MakeOpenRouterRequest(r Request, apiKey string) (OpenRouterResponse, error)
 	}
 
 
+	// check if content is empty
+	if response.Choices[0].Message.Content == "" {
+		return OpenRouterResponse{}, fmt.Errorf("no content returned")
+	}
+
+
 	return response, nil
 }
